@@ -1,48 +1,168 @@
 <!doctype html>
 <html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>HR Job Board</title><meta name="theme-color" content="#ffffff">
-<link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg"><link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>HR Jobs</title>
+<meta name="theme-color" content="#F2F2F7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="HR Jobs">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <style>
-body{font-family:"Roboto Condensed","Arial Narrow",system-ui,sans-serif;margin:0;background:#fff;color:#222;font-size:13px}
-header{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:10px 10px 6px;border-bottom:2px solid #222;position:sticky;top:0;background:#fff;z-index:1}
-h1{margin:0;font-size:18px;white-space:nowrap}header p{margin:0;color:#666;font-size:12px;text-align:right}
-.f{display:flex;flex-wrap:wrap;gap:5px;padding:6px 10px;background:#f6f6f6;border-bottom:1px solid #ddd}
-.f input,.f select{font-size:16px;padding:5px;border:1px solid #bbb;border-radius:3px;flex:1 1 120px;min-width:0}.f input[type=search]{flex-basis:100%}
-.f label{font-size:13px;display:flex;align-items:center;gap:4px}.f input[type=checkbox]{flex:none}
-table{width:100%;border-collapse:collapse}th{text-align:left;font-size:11px;text-transform:uppercase;color:#777;padding:6px;border-bottom:1px solid #ccc;background:#fafafa}
-td{padding:7px 6px;border-bottom:1px solid #eee;vertical-align:top}tr:nth-child(even) td{background:#fbfbfb}tbody tr{cursor:pointer}tbody tr:active td{background:#eef3ff}
-td b{display:block;font-size:13px}td small{color:#777}.m{color:#bbb}.new{background:#d00;color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:2px;margin-left:4px}
-a{color:#0645ad;font-weight:700}.empty{padding:16px;color:#999}
-</style></head><body>
-<header><h1>HR JOB BOARD</h1><p id="sum">Loading…</p></header>
-<div class="f"><input type="search" id="q" placeholder="Search title or company">
-<select id="city"><option value="">All cities</option></select>
-<select id="pay"><option value="">Pay: any</option><option value="y">Pay listed</option><option value="n">Pay not listed</option></select>
-<label><input type="checkbox" id="new"> New today</label></div>
-<table><thead><tr><th>Job</th><th>Pay</th><th>City</th><th>Found</th><th></th></tr></thead><tbody id="list"></tbody></table>
-<script>const MAX_AGE_DAYS = 30, $ = id => document.getElementById(id);
-const pt = d => new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles'}).format(d);
-const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const today = pt(new Date()), cutoff = pt(new Date(Date.now() - MAX_AGE_DAYS*864e5));
-let leads = [];
-const row = j => `<tr${j.url?` data-url="${esc(j.url)}"`:''}><td><b>${esc(j.title||'—')}${j.found===today?'<span class="new">NEW</span>':''}</b><small>${esc(j.company||'')}</small></td>
-<td>${j.pay?esc(j.pay):'<span class="m">—</span>'}</td><td>${esc((j.city||'—').replace(/, CA$/,''))}</td><td>${j.found.slice(5)}</td>
-<td>${j.url?`<a href="${esc(j.url)}" target="_blank" rel="noopener">Apply</a>`:''}</td></tr>`;
-function render() {
-  const q = $('q').value.trim().toLowerCase(), city = $('city').value, pay = $('pay').value, nw = $('new').checked;
-  const shown = leads.filter(j => (!q || `${j.title} ${j.company}`.toLowerCase().includes(q)) && (!city || j.city === city)
-    && (!pay || (pay === 'y') === !!j.pay) && (!nw || j.found === today));
-  $('list').innerHTML = shown.map(row).join('') || '<tr><td colspan="5" class="empty">No leads match.</td></tr>';
-  $('sum').textContent = `${shown.length} of ${leads.length} leads · ${leads.filter(j => j.found === today).length} new today`;
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: #F2F2F7;
+  color: #1C1C1E;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100dvh;
+  overflow-x: hidden;
 }
-fetch('leads.json',{cache:'no-cache'}).then(r=>r.json()).then(data=>{
-  leads = data.map(j => ({...j, found: j.first_seen ? pt(new Date(j.first_seen)) : null})).filter(j => j.found && j.found >= cutoff);
-  [...new Set(leads.map(j => j.city).filter(Boolean))].sort().forEach(c => $('city').add(new Option(c, c)));
-  ['q','city','pay','new'].forEach(id => $(id).addEventListener('input', render));
-  $('list').addEventListener('click', ev => { const tr = ev.target.closest('tr[data-url]');
-    if (tr && !ev.target.closest('a')) window.open(tr.dataset.url, '_blank', 'noopener'); });
+body { padding-top: env(safe-area-inset-top); }
+a { color: inherit; text-decoration: none; }
+.top {
+  position: sticky; top: 0; z-index: 2;
+  background: #F2F2F7;
+  padding: 6px 0 12px;
+}
+header.app { padding: 0 20px 12px; }
+header.app h1 {
+  font-size: 28px; font-weight: 700;
+  letter-spacing: -0.045em; line-height: 1.15;
+}
+header.app .sub {
+  margin-top: 3px; font-size: 13px; font-weight: 500;
+  color: #8E8E93; letter-spacing: -0.01em;
+}
+.search {
+  margin: 0 20px;
+  height: 36px;
+  background: #E3E3E8;
+  border-radius: 10px;
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 10px;
+  color: #8E8E93;
+}
+.search svg { flex: none; }
+.search input {
+  flex: 1; min-width: 0; border: 0; background: transparent;
+  font: inherit; font-size: 16px; color: #1C1C1E;
+  outline: none; -webkit-appearance: none; appearance: none;
+}
+.search input::placeholder { color: #8E8E93; }
+.list {
+  padding: 0 16px calc(28px + env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; gap: 10px;
+}
+.card {
+  display: block;
+  background: #fff;
+  border-radius: 16px;
+  padding: 14px 14px 13px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 14px rgba(0,0,0,.04);
+}
+.card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.title { font-size: 16px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.25; }
+.new {
+  display: inline-block; vertical-align: 2px; margin-left: 6px;
+  background: #FF3B30; color: #fff;
+  font-size: 9px; font-weight: 700; letter-spacing: .06em;
+  padding: 2px 5px; border-radius: 4px; line-height: 1;
+}
+.company {
+  margin-top: 3px; font-size: 13px; font-weight: 500;
+  color: #636366; letter-spacing: -0.01em;
+}
+.meta {
+  margin-top: 8px; display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  font-size: 12px; font-weight: 500; color: #8E8E93;
+}
+.meta .dot { width: 3px; height: 3px; border-radius: 50%; background: #C7C7CC; }
+.pay {
+  display: inline-block; margin-top: 10px;
+  font-size: 12.5px; font-weight: 600; color: #0E7A4A;
+  background: #E8F7EE; padding: 4px 8px; border-radius: 7px;
+  letter-spacing: -0.01em; font-variant-numeric: tabular-nums;
+}
+.apply {
+  flex: none; align-self: center; color: #007AFF;
+  font-size: 15px; font-weight: 600; letter-spacing: -0.02em;
+  padding: 6px 2px 6px 8px; white-space: nowrap;
+}
+.empty { padding: 28px 16px; text-align: center; color: #8E8E93; font-size: 15px; }
+</style>
+</head>
+<body>
+  <div class="top">
+    <header class="app">
+      <h1>HR Jobs</h1>
+      <p class="sub" id="sum">Loading…</p>
+    </header>
+    <div class="search">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+        <circle cx="6.4" cy="6.4" r="4.6" stroke="#8E8E93" stroke-width="1.6"/>
+        <path d="M9.8 9.8 13.2 13.2" stroke="#8E8E93" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      <input type="search" id="q" placeholder="Title or company" autocomplete="off" enterkeyhint="search">
+    </div>
+  </div>
+  <div class="list" id="list"></div>
+<script>
+const MAX_AGE_DAYS = 30, $ = id => document.getElementById(id);
+const pt = d => new Intl.DateTimeFormat('en-CA', {timeZone:'America/Los_Angeles'}).format(d);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const foundLabel = day => {
+  const [, m, d] = day.split('-');
+  return months[Number(m) - 1] + ' ' + Number(d);
+};
+const formatPay = p => String(p).trim()
+  .replace(/\s*Annually\s*/i, '/yr')
+  .replace(/\s*per year\s*/i, '/yr')
+  .replace(/\s*a year\s*/i, '/yr')
+  .replace(/\s*-\s*/g, '–')
+  .replace(/(\d),(\d{3})\.00(?!\d)/g, '$1,$2')
+  .replace(/\s+\/yr/i, '/yr');
+const today = pt(new Date()), cutoff = pt(new Date(Date.now() - MAX_AGE_DAYS * 864e5));
+let leads = [];
+
+function card(j) {
+  const badge = j.found === today ? '<span class="new">NEW</span>' : '';
+  const city = (j.city || '').replace(/, CA$/, '');
+  const bits = [];
+  if (city) bits.push(esc(city));
+  if (j.found) bits.push(esc(foundLabel(j.found)));
+  if (j.employment_type) bits.push(esc(j.employment_type));
+  const meta = bits.map(b => '<span>' + b + '</span>').join('<span class="dot"></span>');
+  const pay = j.pay ? '<span class="pay">' + esc(formatPay(j.pay)) + '</span>' : '';
+  const apply = j.url ? '<span class="apply">Apply</span>' : '';
+  const inner = '<div class="card-top"><div><div class="title">' + esc(j.title || '—') + badge +
+    '</div>' + (j.company ? '<div class="company">' + esc(j.company) + '</div>' : '') +
+    '</div>' + apply + '</div>' + (meta ? '<div class="meta">' + meta + '</div>' : '') + pay;
+  if (j.url) return '<a class="card" href="' + esc(j.url) + '" target="_blank" rel="noopener">' + inner + '</a>';
+  return '<div class="card">' + inner + '</div>';
+}
+
+function render() {
+  const q = $('q').value.trim().toLowerCase();
+  const shown = leads.filter(j => !q || (j.title + ' ' + j.company).toLowerCase().includes(q));
+  const nNew = shown.filter(j => j.found === today).length;
+  $('list').innerHTML = shown.map(card).join('') || '<p class="empty">No leads match.</p>';
+  const n = shown.length, total = leads.length;
+  const leadWord = (n === 1 ? 'lead' : 'leads');
+  $('sum').textContent = (q && n !== total ? n + ' of ' + total + ' leads' : n + ' ' + leadWord) +
+    ' · ' + nNew + ' new today';
+}
+
+fetch('leads.json', {cache:'no-cache'}).then(r => r.json()).then(data => {
+  leads = data.map(j => ({...j, found: j.first_seen ? pt(new Date(j.first_seen)) : null}))
+    .filter(j => j.found && j.found >= cutoff);
+  $('q').addEventListener('input', render);
   render();
-}).catch(()=>$('sum').textContent='Could not load leads.');
+}).catch(() => { $('sum').textContent = 'Could not load leads.'; });
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
-</script></body></html>
+</script>
+</body></html>
